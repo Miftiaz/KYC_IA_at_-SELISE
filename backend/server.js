@@ -1,12 +1,25 @@
 // server.js
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const PDFDocument = require('pdfkit');
-const { Readable } = require('stream');
+// require('dotenv').config();
+// const express = require('express');
+// const mongoose = require('mongoose');
+// const cors = require('cors');
+// const jwt = require('jsonwebtoken');
+// const bcrypt = require('bcryptjs');
+// const PDFDocument = require('pdfkit');
+// const { Readable } = require('stream');
+// const AISummaryAdapter = require('./AISummaryAdapter');
+
+import 'dotenv/config'; // replaces require('dotenv').config()
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import PDFDocument from 'pdfkit';
+import { Readable } from 'stream';
+import AISummaryAdapter from './AISummaryAdapter.js';
+
+const aiGen = new AISummaryAdapter(process.env.OPENROUTER_API_KEY);
 
 const app = express();
 
@@ -57,12 +70,13 @@ const Application = mongoose.model('Application', applicationSchema);
 const Admin = mongoose.model('Admin', adminSchema);
 
 // Helper function to generate application summary
-function generateSummary(data) {
-  const age = new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear();
-  return `${data.fullName}, aged ${age}, is a ${data.profession} residing at ${data.address}. ` +
-         `Contact details: ${data.email}, ${data.phone}. ` +
-         `Identity verified via ${data.idType.replace('_', ' ')} (${data.idNumber}).`;
-}
+// function generateSummary(data) {
+//   const age = new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear();
+//   return `${data.fullName}, aged ${age}, is a ${data.profession} residing at ${data.address}. ` +
+//          `Contact details: ${data.email}, ${data.phone}. ` +
+//          `Identity verified via ${data.idType.replace('_', ' ')} (${data.idNumber}).`;
+// }
+
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
@@ -107,14 +121,14 @@ initializeAdmin();
 app.post('/api/applications', async (req, res) => {
   try {
     const { fullName, dateOfBirth, email, phone, profession, address, idNumber, idType } = req.body;
-
     // Validation
     if (!fullName || !dateOfBirth || !email || !phone || !profession || !address || !idNumber || !idType) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     // Generate summary
-    const summary = generateSummary(req.body);
+    const summary = await aiGen.generate(req.body); 
+    console.log("Generated summary:", summary);
 
     // Create application
     const application = new Application({
@@ -313,4 +327,4 @@ app.listen(PORT, () => {
   console.log(`API available at http://localhost:${PORT}/api`);
 });
 
-module.exports = app;
+export default app;
