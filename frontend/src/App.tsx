@@ -204,22 +204,38 @@ const KYCSystem: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <header className="backdrop-blur-md bg-slate-900/50 border-b border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-indigo-600">KYC System</h1>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">KYC</span>
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              KYC System
+            </h1>
+          </div>
+          <div className="flex gap-3">
             {!token && (
               <>
                 <button
                   onClick={() => setView('user')}
-                  className={`px-4 py-2 rounded ${view === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                    view === 'user' 
+                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/50' 
+                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50'
+                  }`}
                 >
                   Submit KYC
                 </button>
                 <button
                   onClick={() => setView('login')}
-                  className={`px-4 py-2 rounded ${view === 'login' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                    view === 'login' 
+                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/50' 
+                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50'
+                  }`}
                 >
                   Admin Login
                 </button>
@@ -228,7 +244,7 @@ const KYCSystem: React.FC = () => {
             {token && (
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-500 text-white rounded flex items-center gap-2 hover:bg-red-600"
+                className="px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-red-500/50 transition-all duration-300 font-medium"
               >
                 <LogOut size={18} /> Logout
               </button>
@@ -237,10 +253,13 @@ const KYCSystem: React.FC = () => {
         </div>
       </header>
 
+      {/* Messages */}
       {message && (
         <div className="max-w-7xl mx-auto px-4 mt-4">
-          <div className={`p-4 rounded flex items-center gap-2 ${
-            message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          <div className={`p-4 rounded-lg flex items-center gap-3 backdrop-blur-md border transition-all duration-300 ${
+            message.type === 'success' 
+              ? 'bg-green-500/10 text-green-300 border-green-500/30 shadow-lg shadow-green-500/20' 
+              : 'bg-red-500/10 text-red-300 border-red-500/30 shadow-lg shadow-red-500/20'
           }`}>
             {message.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
             {message.text}
@@ -250,104 +269,114 @@ const KYCSystem: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {view === 'user' && (
-          <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">KYC Application Form</h2>
-            <div className="space-y-4">
+          <div className="backdrop-blur-md bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-2xl p-8 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              KYC Application Form
+            </h2>
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
                 <input
                   type="text"
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Enter your full name"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Date of Birth</label>
                 <input
                   type="date"
                   name="dateOfBirth"
                   value={formData.dateOfBirth}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="your@email.com"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Phone</label>
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="+1 (555) 000-0000"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Profession</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Profession</label>
                 <input
                   type="text"
                   name="profession"
                   value={formData.profession}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Your profession"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Address</label>
                 <textarea
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
+                  placeholder="Your residential address"
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ID Type</label>
-                <select
-                  name="idType"
-                  value={formData.idType}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                >
-                  <option value="passport">Passport</option>
-                  <option value="driving_license">Driving License</option>
-                  <option value="national_id">National ID</option>
-                </select>
-              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">ID Type</label>
+                  <select
+                    name="idType"
+                    value={formData.idType}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                  >
+                    <option value="passport">Passport</option>
+                    <option value="driving_license">Driving License</option>
+                    <option value="national_id">National ID</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
-                <input
-                  type="text"
-                  name="idNumber"
-                  value={formData.idNumber}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">ID Number</label>
+                  <input
+                    type="text"
+                    name="idNumber"
+                    value={formData.idNumber}
+                    onChange={handleInputChange}
+                    placeholder="ID number"
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                  />
+                </div>
               </div>
 
               <button
                 onClick={handleSubmitKYC}
                 disabled={loading}
-                className="w-full bg-indigo-600 text-white py-3 rounded font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 mt-6"
               >
                 {loading ? 'Submitting...' : 'Submit Application'}
               </button>
@@ -356,119 +385,134 @@ const KYCSystem: React.FC = () => {
         )}
 
         {view === 'login' && (
-          <div className="bg-white rounded-lg shadow-md p-8 max-w-md mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-              <User /> Admin Login
+          <div className="backdrop-blur-md bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-2xl p-8 max-w-md mx-auto">
+            <div className="flex items-center justify-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                <User size={32} className="text-white" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              Admin Login
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Username</label>
                 <input
                   type="text"
                   value={loginData.username}
                   onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Enter username"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
                 <input
                   type="password"
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Enter password"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 />
               </div>
 
               <button
                 onClick={handleLogin}
                 disabled={loading}
-                className="w-full bg-indigo-600 text-white py-3 rounded font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 mt-6"
               >
                 {loading ? 'Logging in...' : 'Login'}
               </button>
             </div>
-            <p className="text-sm text-gray-600 mt-4 text-center">
-              Demo: admin / admin123
+            <p className="text-sm text-slate-400 mt-6 text-center">
+              Demo Credentials: <br />
+              <span className="text-indigo-400 font-medium">admin</span> / <span className="text-indigo-400 font-medium">admin123</span>
             </p>
           </div>
         )}
 
         {view === 'admin' && token && (
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">KYC Applications</h2>
+          <div className="backdrop-blur-md bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-2xl p-8">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                KYC Applications
+              </h2>
               <button
                 onClick={fetchApplications}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-indigo-500/50 transition-all duration-300 font-medium"
               >
                 Refresh
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               {applications.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No applications found</p>
+                <div className="text-center py-12 text-slate-400">
+                  <p className="text-lg">No applications found</p>
+                </div>
               ) : (
                 applications.map((app) => (
-                  <div key={app._id} className="border border-gray-200 rounded-lg p-6">
+                  <div 
+                    key={app._id} 
+                    className="border border-slate-600/50 bg-slate-700/30 backdrop-blur-sm rounded-xl p-6 hover:border-indigo-500/50 hover:bg-slate-700/50 transition-all duration-300"
+                  >
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800">{app.fullName}</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className="text-lg font-semibold text-white">{app.fullName}</h3>
+                        <p className="text-sm text-slate-400">
                           Submitted: {new Date(app.submittedAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className={`px-3 py-1 rounded text-sm font-medium ${
-                        app.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        app.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
+                      <span className={`px-4 py-2 rounded-lg text-sm font-semibold ${
+                        app.status === 'approved' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
+                        app.status === 'rejected' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
+                        'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
                       }`}>
                         {app.status.toUpperCase()}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 mb-4 text-sm text-slate-300">
                       <div>
-                        <span className="font-medium">Email:</span> {app.email}
+                        <span className="font-medium text-slate-400">Email:</span> {app.email}
                       </div>
                       <div>
-                        <span className="font-medium">Phone:</span> {app.phone}
+                        <span className="font-medium text-slate-400">Phone:</span> {app.phone}
                       </div>
                       <div>
-                        <span className="font-medium">DOB:</span> {new Date(app.dateOfBirth).toLocaleDateString()}
+                        <span className="font-medium text-slate-400">DOB:</span> {new Date(app.dateOfBirth).toLocaleDateString()}
                       </div>
                       <div>
-                        <span className="font-medium">Profession:</span> {app.profession}
+                        <span className="font-medium text-slate-400">Profession:</span> {app.profession}
                       </div>
                       <div className="col-span-2">
-                        <span className="font-medium">ID:</span> {app.idType} - {app.idNumber}
+                        <span className="font-medium text-slate-400">ID:</span> {app.idType} - {app.idNumber}
                       </div>
                       <div className="col-span-2">
-                        <span className="font-medium">Address:</span> {app.address}
+                        <span className="font-medium text-slate-400">Address:</span> {app.address}
                       </div>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded mb-4">
-                      <p className="text-sm font-medium text-gray-700 mb-1">Summary:</p>
-                      <p className="text-sm text-gray-600">{app.summary}</p>
+                    <div className="bg-slate-800/50 border border-slate-600/50 p-4 rounded-lg mb-4">
+                      <p className="text-sm font-medium text-indigo-300 mb-2">Summary:</p>
+                      <p className="text-sm text-slate-300 leading-relaxed">{app.summary}</p>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-3 flex-wrap">
                       {app.status === 'pending' && (
                         <>
                           <button
                             onClick={() => handleApproval(app._id, 'approved')}
                             disabled={loading}
-                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium"
                           >
                             Approve
                           </button>
                           <button
                             onClick={() => handleApproval(app._id, 'rejected')}
                             disabled={loading}
-                            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400"
+                            className="px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:shadow-lg hover:shadow-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium"
                           >
                             Reject
                           </button>
@@ -477,7 +521,7 @@ const KYCSystem: React.FC = () => {
                       {app.status === 'approved' && (
                         <button
                           onClick={() => handleDownloadPDF(app._id)}
-                          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-2"
+                          className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-indigo-500/50 transition-all duration-300 flex items-center gap-2 font-medium"
                         >
                           <Download size={18} /> Download PDF
                         </button>
