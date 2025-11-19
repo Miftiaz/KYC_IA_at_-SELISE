@@ -45,7 +45,7 @@ if (!fs.existsSync(pdfDir)) {
 }
 
 // Generate PDF function
-async function generatePDF(applicationId) {
+export async function generatePDF(applicationId) {
   try {
     const application = await Application.findById(applicationId);
 

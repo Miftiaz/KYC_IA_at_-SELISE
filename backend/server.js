@@ -298,10 +298,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date() });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`API available at http://localhost:${PORT}/api`);
-});
+// Start server only if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`API available at http://localhost:${PORT}/api`);
+  });
+}
 
 export default app;
