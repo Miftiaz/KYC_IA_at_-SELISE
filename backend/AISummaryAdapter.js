@@ -23,7 +23,7 @@ ID Number: ${data.idNumber}
 
     try {
       const completion = await this.client.chat.completions.create({
-        model: 'CohereLabs/aya-expanse-32b:cohere',
+        model: 'meta-llama/Llama-2-7b-chat-hf',
         messages: [
           {
             role: 'system',
@@ -34,15 +34,23 @@ ID Number: ${data.idNumber}
             content: prompt
           }
         ],
+        max_tokens: 300,
       });
 
       const content = completion.choices[0]?.message?.content || "Summary could not be generated.";
       return content;
     } catch (error) {
-      console.error('Error generating summary:', error.message);
-      throw error;
+      console.error('Error generating summary with LLM:', error.message);
+      // Fallback to a simple template-based summary if API fails
+      console.log('Using fallback summary generation...');
+      return this.generateFallbackSummary(data);
     }
+  }
+
+  generateFallbackSummary(data) {
+    return `Professional Summary: ${data.fullName} is a ${data.profession} currently residing at ${data.address}. Contact: ${data.email} / ${data.phone}. Identification: ${data.idType} (${data.idNumber}). DOB: ${new Date(data.dateOfBirth).toLocaleDateString()}. This KYC application has been submitted for verification and processing.`;
   }
 }
 
 export default AISummaryAdapter;
+

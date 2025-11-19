@@ -36,6 +36,7 @@ const KYCSystem: React.FC = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<KYCFormData>({
     fullName: '',
@@ -433,10 +434,11 @@ const KYCSystem: React.FC = () => {
         )}
 
         {view === 'admin' && token && (
-          <div className="backdrop-blur-md bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-2xl p-8">
-            <div className="flex justify-between items-center mb-8">
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="flex justify-between items-center">
               <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                KYC Applications
+                Dashboard
               </h2>
               <button
                 onClick={fetchApplications}
@@ -446,90 +448,265 @@ const KYCSystem: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-5">
-              {applications.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
-                  <p className="text-lg">No applications found</p>
-                </div>
-              ) : (
-                applications.map((app) => (
-                  <div 
-                    key={app._id} 
-                    className="border border-slate-600/50 bg-slate-700/30 backdrop-blur-sm rounded-xl p-6 hover:border-indigo-500/50 hover:bg-slate-700/50 transition-all duration-300"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">{app.fullName}</h3>
-                        <p className="text-sm text-slate-400">
-                          Submitted: {new Date(app.submittedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <span className={`px-4 py-2 rounded-lg text-sm font-semibold ${
-                        app.status === 'approved' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
-                        app.status === 'rejected' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
-                        'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                      }`}>
-                        {app.status.toUpperCase()}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-4 text-sm text-slate-300">
-                      <div>
-                        <span className="font-medium text-slate-400">Email:</span> {app.email}
-                      </div>
-                      <div>
-                        <span className="font-medium text-slate-400">Phone:</span> {app.phone}
-                      </div>
-                      <div>
-                        <span className="font-medium text-slate-400">DOB:</span> {new Date(app.dateOfBirth).toLocaleDateString()}
-                      </div>
-                      <div>
-                        <span className="font-medium text-slate-400">Profession:</span> {app.profession}
-                      </div>
-                      <div className="col-span-2">
-                        <span className="font-medium text-slate-400">ID:</span> {app.idType} - {app.idNumber}
-                      </div>
-                      <div className="col-span-2">
-                        <span className="font-medium text-slate-400">Address:</span> {app.address}
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-800/50 border border-slate-600/50 p-4 rounded-lg mb-4">
-                      <p className="text-sm font-medium text-indigo-300 mb-2">Summary:</p>
-                      <p className="text-sm text-slate-300 leading-relaxed">{app.summary}</p>
-                    </div>
-
-                    <div className="flex gap-3 flex-wrap">
-                      {app.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleApproval(app._id, 'approved')}
-                            disabled={loading}
-                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleApproval(app._id, 'rejected')}
-                            disabled={loading}
-                            className="px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:shadow-lg hover:shadow-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      {app.status === 'approved' && (
-                        <button
-                          onClick={() => handleDownloadPDF(app._id)}
-                          className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-indigo-500/50 transition-all duration-300 flex items-center gap-2 font-medium"
-                        >
-                          <Download size={18} /> Download PDF
-                        </button>
-                      )}
-                    </div>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="backdrop-blur-md bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-yellow-300 text-sm font-medium mb-1">Pending</p>
+                    <p className="text-3xl font-bold text-yellow-200">{applications.filter(a => a.status === 'pending').length}</p>
                   </div>
-                ))
-              )}
+                  <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">⏳</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="backdrop-blur-md bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-300 text-sm font-medium mb-1">Approved</p>
+                    <p className="text-3xl font-bold text-green-200">{applications.filter(a => a.status === 'approved').length}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">✓</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="backdrop-blur-md bg-gradient-to-br from-red-500/10 to-pink-500/10 border border-red-500/30 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-300 text-sm font-medium mb-1">Rejected</p>
+                    <p className="text-3xl font-bold text-red-200">{applications.filter(a => a.status === 'rejected').length}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">✕</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Three Panel Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Pending Panel */}
+              <div className="backdrop-blur-md bg-slate-800/50 border border-yellow-500/30 rounded-2xl shadow-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-b border-yellow-500/30 px-6 py-4">
+                  <h3 className="text-xl font-bold text-yellow-300 flex items-center gap-2">
+                    <span className="text-2xl">⏳</span> Pending ({applications.filter(a => a.status === 'pending').length})
+                  </h3>
+                </div>
+                <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
+                  {applications.filter(a => a.status === 'pending').length === 0 ? (
+                    <p className="text-slate-400 text-center py-8">No pending applications</p>
+                  ) : (
+                    applications.filter(a => a.status === 'pending').map((app) => (
+                      <div key={app._id} className="border border-yellow-500/20 bg-yellow-500/5 rounded-xl overflow-hidden hover:bg-yellow-500/10 transition-all">
+                        <div 
+                          className="p-4 cursor-pointer"
+                          onClick={() => setExpandedId(expandedId === app._id ? null : app._id)}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="font-semibold text-yellow-100">{app.fullName}</h4>
+                            <span className="text-xs text-yellow-300">{expandedId === app._id ? '▼' : '▶'}</span>
+                          </div>
+                          <p className="text-xs text-slate-400">{app.email}</p>
+                        </div>
+
+                        {expandedId === app._id && (
+                          <div className="border-t border-yellow-500/20 bg-yellow-500/5 px-4 py-4 space-y-3">
+                            <div className="grid grid-cols-2 gap-3 text-xs">
+                              <div>
+                                <span className="text-yellow-300 font-medium">Phone:</span>
+                                <p className="text-slate-300">{app.phone}</p>
+                              </div>
+                              <div>
+                                <span className="text-yellow-300 font-medium">DOB:</span>
+                                <p className="text-slate-300">{new Date(app.dateOfBirth).toLocaleDateString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-yellow-300 font-medium">Profession:</span>
+                                <p className="text-slate-300">{app.profession}</p>
+                              </div>
+                              <div>
+                                <span className="text-yellow-300 font-medium">ID Type:</span>
+                                <p className="text-slate-300">{app.idType}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-yellow-300 font-medium">ID Number:</span>
+                                <p className="text-slate-300">{app.idNumber}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-yellow-300 font-medium">Address:</span>
+                                <p className="text-slate-300">{app.address}</p>
+                              </div>
+                            </div>
+                            <div className="bg-slate-800/50 border border-yellow-500/20 p-3 rounded">
+                              <p className="text-xs text-yellow-300 font-medium mb-1">Summary:</p>
+                              <p className="text-xs text-slate-300 leading-relaxed">{app.summary}</p>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                              <button
+                                onClick={() => handleApproval(app._id, 'approved')}
+                                disabled={loading}
+                                className="flex-1 px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/50 disabled:opacity-50 text-xs font-medium transition-all"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleApproval(app._id, 'rejected')}
+                                disabled={loading}
+                                className="flex-1 px-3 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:shadow-lg hover:shadow-red-500/50 disabled:opacity-50 text-xs font-medium transition-all"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Approved Panel */}
+              <div className="backdrop-blur-md bg-slate-800/50 border border-green-500/30 rounded-2xl shadow-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-b border-green-500/30 px-6 py-4">
+                  <h3 className="text-xl font-bold text-green-300 flex items-center gap-2">
+                    <span className="text-2xl">✓</span> Approved ({applications.filter(a => a.status === 'approved').length})
+                  </h3>
+                </div>
+                <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
+                  {applications.filter(a => a.status === 'approved').length === 0 ? (
+                    <p className="text-slate-400 text-center py-8">No approved applications</p>
+                  ) : (
+                    applications.filter(a => a.status === 'approved').map((app) => (
+                      <div key={app._id} className="border border-green-500/20 bg-green-500/5 rounded-xl overflow-hidden hover:bg-green-500/10 transition-all">
+                        <div 
+                          className="p-4 cursor-pointer"
+                          onClick={() => setExpandedId(expandedId === app._id ? null : app._id)}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h4 className="font-semibold text-green-100">{app.fullName}</h4>
+                              <p className="text-xs text-slate-400">{app.email}</p>
+                            </div>
+                            <span className="text-xs text-green-300">{expandedId === app._id ? '▼' : '▶'}</span>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadPDF(app._id);
+                            }}
+                            className="w-full px-3 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-indigo-500/50 transition-all flex items-center justify-center gap-2 text-xs font-medium"
+                          >
+                            <Download size={14} /> Download PDF
+                          </button>
+                        </div>
+
+                        {expandedId === app._id && (
+                          <div className="border-t border-green-500/20 bg-green-500/5 px-4 py-4 space-y-3">
+                            <div className="grid grid-cols-2 gap-3 text-xs">
+                              <div>
+                                <span className="text-green-300 font-medium">Phone:</span>
+                                <p className="text-slate-300">{app.phone}</p>
+                              </div>
+                              <div>
+                                <span className="text-green-300 font-medium">DOB:</span>
+                                <p className="text-slate-300">{new Date(app.dateOfBirth).toLocaleDateString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-green-300 font-medium">Profession:</span>
+                                <p className="text-slate-300">{app.profession}</p>
+                              </div>
+                              <div>
+                                <span className="text-green-300 font-medium">ID Type:</span>
+                                <p className="text-slate-300">{app.idType}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-green-300 font-medium">ID Number:</span>
+                                <p className="text-slate-300">{app.idNumber}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-green-300 font-medium">Address:</span>
+                                <p className="text-slate-300">{app.address}</p>
+                              </div>
+                            </div>
+                            <div className="bg-slate-800/50 border border-green-500/20 p-3 rounded">
+                              <p className="text-xs text-green-300 font-medium mb-1">Summary:</p>
+                              <p className="text-xs text-slate-300 leading-relaxed">{app.summary}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Rejected Panel */}
+              <div className="backdrop-blur-md bg-slate-800/50 border border-red-500/30 rounded-2xl shadow-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-red-500/20 to-pink-500/20 border-b border-red-500/30 px-6 py-4">
+                  <h3 className="text-xl font-bold text-red-300 flex items-center gap-2">
+                    <span className="text-2xl">✕</span> Rejected ({applications.filter(a => a.status === 'rejected').length})
+                  </h3>
+                </div>
+                <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
+                  {applications.filter(a => a.status === 'rejected').length === 0 ? (
+                    <p className="text-slate-400 text-center py-8">No rejected applications</p>
+                  ) : (
+                    applications.filter(a => a.status === 'rejected').map((app) => (
+                      <div key={app._id} className="border border-red-500/20 bg-red-500/5 rounded-xl overflow-hidden hover:bg-red-500/10 transition-all">
+                        <div 
+                          className="p-4 cursor-pointer"
+                          onClick={() => setExpandedId(expandedId === app._id ? null : app._id)}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="font-semibold text-red-100">{app.fullName}</h4>
+                            <span className="text-xs text-red-300">{expandedId === app._id ? '▼' : '▶'}</span>
+                          </div>
+                          <p className="text-xs text-slate-400">{app.email}</p>
+                        </div>
+
+                        {expandedId === app._id && (
+                          <div className="border-t border-red-500/20 bg-red-500/5 px-4 py-4 space-y-3">
+                            <div className="grid grid-cols-2 gap-3 text-xs">
+                              <div>
+                                <span className="text-red-300 font-medium">Phone:</span>
+                                <p className="text-slate-300">{app.phone}</p>
+                              </div>
+                              <div>
+                                <span className="text-red-300 font-medium">DOB:</span>
+                                <p className="text-slate-300">{new Date(app.dateOfBirth).toLocaleDateString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-red-300 font-medium">Profession:</span>
+                                <p className="text-slate-300">{app.profession}</p>
+                              </div>
+                              <div>
+                                <span className="text-red-300 font-medium">ID Type:</span>
+                                <p className="text-slate-300">{app.idType}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-red-300 font-medium">ID Number:</span>
+                                <p className="text-slate-300">{app.idNumber}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-red-300 font-medium">Address:</span>
+                                <p className="text-slate-300">{app.address}</p>
+                              </div>
+                            </div>
+                            <div className="bg-slate-800/50 border border-red-500/20 p-3 rounded">
+                              <p className="text-xs text-red-300 font-medium mb-1">Summary:</p>
+                              <p className="text-xs text-slate-300 leading-relaxed">{app.summary}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
