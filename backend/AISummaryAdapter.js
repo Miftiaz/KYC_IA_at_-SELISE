@@ -1,14 +1,10 @@
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 
 class AISummaryAdapter {
   constructor(apiKey) {
     this.client = new OpenAI({
-      baseURL: 'https://openrouter.ai/api/v1',
+      baseURL: 'https://router.huggingface.co/v1',
       apiKey: apiKey,
-      defaultHeaders: {
-        'HTTP-Referer': process.env.SITE_URL || 'http://localhost',
-        'X-Title': process.env.SITE_NAME || 'KYC-IA',
-      },
     });
   }
 
@@ -27,7 +23,7 @@ ID Number: ${data.idNumber}
 
     try {
       const completion = await this.client.chat.completions.create({
-        model: 'openrouter/auto', // Uses the cheapest available model
+        model: 'CohereLabs/aya-expanse-32b:cohere',
         messages: [
           {
             role: 'system',

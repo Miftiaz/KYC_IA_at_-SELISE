@@ -17,15 +17,24 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import PDFDocument from 'pdfkit';
 import { Readable } from 'stream';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import AISummaryAdapter from './AISummaryAdapter.js';
+import { publishPDFTask } from './rabbitmqConfig.js';
 
-const aiGen = new AISummaryAdapter(process.env.OPENROUTER_API_KEY);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const aiGen = new AISummaryAdapter(process.env.HF_TOKEN);
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve PDFs as static files
+app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
 // Configuration
 const PORT = process.env.PORT || 3001;
@@ -68,15 +77,6 @@ const adminSchema = new mongoose.Schema({
 
 const Application = mongoose.model('Application', applicationSchema);
 const Admin = mongoose.model('Admin', adminSchema);
-
-// Helper function to generate application summary
-// function generateSummary(data) {
-//   const age = new Date().getFullYear() - new Date(data.dateOfBirth).getFullYear();
-//   return `${data.fullName}, aged ${age}, is a ${data.profession} residing at ${data.address}. ` +
-//          `Contact details: ${data.email}, ${data.phone}. ` +
-//          `Identity verified via ${data.idType.replace('_', ' ')} (${data.idNumber}).`;
-// }
-
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
@@ -204,9 +204,8 @@ app.put('/api/admin/applications/:id/approved', authenticateToken, async (req, r
     const application = await Application.findByIdAndUpdate(
       req.params.id,
       { 
-        status: 'approved', 
-        processedAt: new Date(),
-        pdfGenerated: true 
+        status: 'approved',
+        processedAt: new Date()
       },
       { new: true }
     );
@@ -215,12 +214,23 @@ app.put('/api/admin/applications/:id/approved', authenticateToken, async (req, r
       return res.status(404).json({ message: 'Application not found' });
     }
 
-    res.json({ message: 'Application approved', application });
+    console.log("🔥 APPROVE ROUTE CALLED");
+
+
+    // 🔥 Queue the PDF creation here
+    await publishPDFTask(req.params.id);
+
+    res.json({ 
+      message: 'Application approved and queued for PDF generation', 
+      application 
+    });
+
   } catch (error) {
     console.error('Error approving application:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // Reject Application (Admin only)
 app.put('/api/admin/applications/:id/rejected', authenticateToken, async (req, res) => {
@@ -250,71 +260,38 @@ app.get('/api/admin/applications/:id/pdf', authenticateToken, async (req, res) =
   try {
     const application = await Application.findById(req.params.id);
 
+    const app = application.toObject();
+    
+    console.log(app.pdfPath)
+
     if (!application) {
       return res.status(404).json({ message: 'Application not found' });
     }
 
     if (application.status !== 'approved') {
-      return res.status(400).json({ message: 'Only approved applications can generate PDFs' });
+      return res.status(400).json({ message: 'Application not approved yet' });
     }
 
-    // Create PDF
-    const doc = new PDFDocument({ margin: 50 });
-    
-    // Set response headers
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=kyc-${application._id}.pdf`);
+    // If generated -> return URL
+    if (application.pdfGenerated) {
+      const pdfPath = app.pdfPath; // ensures absolute path
+      console.log('Downloading PDF from:', pdfPath);
+      return res.download(pdfPath, `kyc-${application._id}.pdf`);
+    }
 
-    // Pipe PDF to response
-    doc.pipe(res);
-
-    // Add content to PDF
-    doc.fontSize(20).text('KYC Application Document', { align: 'center' });
-    doc.moveDown();
-    doc.fontSize(12).text(`Application ID: ${application._id}`);
-    doc.text(`Status: ${application.status.toUpperCase()}`, { underline: true });
-    doc.moveDown();
-
-    doc.fontSize(14).text('Personal Information', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11);
-    doc.text(`Full Name: ${application.fullName}`);
-    doc.text(`Date of Birth: ${new Date(application.dateOfBirth).toLocaleDateString()}`);
-    doc.text(`Email: ${application.email}`);
-    doc.text(`Phone: ${application.phone}`);
-    doc.text(`Profession: ${application.profession}`);
-    doc.text(`Address: ${application.address}`);
-    doc.moveDown();
-
-    doc.fontSize(14).text('Identification', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11);
-    doc.text(`ID Type: ${application.idType.replace('_', ' ').toUpperCase()}`);
-    doc.text(`ID Number: ${application.idNumber}`);
-    doc.moveDown();
-
-    doc.fontSize(14).text('Summary', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11);
-    doc.text(application.summary, { align: 'justify' });
-    doc.moveDown();
-
-    doc.fontSize(10).text(`Submitted: ${new Date(application.submittedAt).toLocaleString()}`);
-    doc.text(`Processed: ${new Date(application.processedAt).toLocaleString()}`);
-    doc.moveDown(2);
-
-    doc.fontSize(9).text('This document is generated automatically and contains verified information.', {
-      align: 'center',
-      color: 'gray'
+    // If not generated -> tell frontend to wait
+    return res.status(202).json({
+      message: 'PDF generation in progress. Please check again shortly.',
+      applicationId: application._id
     });
 
-    // Finalize PDF
-    doc.end();
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    res.status(500).json({ message: 'Error generating PDF' });
+    console.error('Error in PDF download:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
+
+
 
 // Health check
 app.get('/api/health', (req, res) => {
