@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: ./backend
+    image: kyc-backend:latest       # <- safe image name with tag
+    container_name: kyc-backend     # <- container name, no tag
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/kycdb
+    depends_on:
+      - mongo
+
+  frontend:
+    build: ./frontend
+    image: kyc-frontend:latest
+    container_name: kyc-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo:6
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
